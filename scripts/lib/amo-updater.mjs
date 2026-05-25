@@ -9,7 +9,7 @@ import yauzl from 'yauzl';
 const DEFAULT_AMO_API_BASE = 'https://addons.mozilla.org/api/v5/addons/addon';
 const FORK_EXTENSION_ID = 'open-youtube-transcript-copy@stone-w4tch3r.github.io';
 const FORK_EXTENSION_NAME = 'Open YouTube Transcript Copier';
-const FORK_DESCRIPTION_PREFIX = 'Source-available fork; source: https://github.com/stone-w4tch3r/open-youtube-transcript-copy.';
+const FORK_DESCRIPTION_PREFIX = 'Source-available fork;';
 
 export function verifySha256(buffer, expectedHash) {
   const expected = expectedHash.replace(/^sha256:/i, '').toLowerCase();
@@ -111,11 +111,16 @@ export function patchManifestForFork(manifest) {
     ...manifest,
     name: FORK_EXTENSION_NAME,
     description: `${FORK_DESCRIPTION_PREFIX} ${manifest.description ?? ''}`.trim(),
+    homepage_url: 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy',
     browser_specific_settings: {
       ...manifest.browser_specific_settings,
       gecko: {
         ...manifest.browser_specific_settings?.gecko,
         id: FORK_EXTENSION_ID,
+        strict_min_version: '115.0',
+        data_collection_permissions: {
+          required: ['none'],
+        },
       },
     },
   };

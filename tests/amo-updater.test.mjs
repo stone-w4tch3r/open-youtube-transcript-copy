@@ -151,7 +151,10 @@ test('patchManifestForFork gives the extracted extension a distinct public fork 
 
   assert.equal(patched.name, 'Open YouTube Transcript Copier');
   assert.equal(patched.browser_specific_settings.gecko.id, 'open-youtube-transcript-copy@stone-w4tch3r.github.io');
-  assert.match(patched.description, /^Source-available fork; source: https:\/\/github\.com\/stone-w4tch3r\/open-youtube-transcript-copy\./);
+  assert.equal(patched.browser_specific_settings.gecko.strict_min_version, '115.0');
+  assert.deepStrictEqual(patched.browser_specific_settings.gecko.data_collection_permissions, { required: ['none'] });
+  assert.equal(patched.homepage_url, 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy');
+  assert.match(patched.description, /^Source-available fork;/);
   assert.match(patched.description, /Upstream description\./);
 });
 

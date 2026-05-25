@@ -13,7 +13,7 @@ This repository is an unofficial open fork generated from the Mozilla Add-ons pa
 - License: [MIT License](https://spdx.org/licenses/MIT.html) (AMO slug: `MIT`)
 - Homepage: not listed
 - Support URL: not listed
-- Extracted at: 2026-05-25T11:43:24.446Z
+- Extracted at: 2026-05-25T12:00:53.589Z
 
 ## Upstream Authors
 
