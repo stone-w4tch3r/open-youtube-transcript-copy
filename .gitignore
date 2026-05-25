@@ -1,6 +1,26 @@
 node_modules/
 dist/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor/IDE
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+
+# Build and signing artifacts
+web-ext-artifacts/
+.web-ext/
+.amo-upload-uuid
+
+# Logs, env, npm config
 *.log
 .env
-.amo-upload-uuid
+.npmrc
+
+# Tarballs
+*.tgz
