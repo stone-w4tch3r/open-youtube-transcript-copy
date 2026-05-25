@@ -1,0 +1,8 @@
+open-youtube-transcript-copy is an unofficial open fork generated from the
+Mozilla Add-ons package for "YouTube Transcript Copy".
+
+Mozilla Add-ons reports the upstream add-on license as MIT License. Upstream
+package metadata, author attribution, version, download URL, and SHA-256 hash
+are recorded in UPSTREAM.md and .mirror/amo.json when the updater runs.
+
+This repository is not affiliated with or endorsed by the original author.

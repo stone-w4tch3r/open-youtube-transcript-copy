@@ -1,0 +1,17 @@
+{
+  "name": "open-youtube-transcript-copy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unofficial open fork and provenance-tracked source extraction for YouTube Transcript Copy.",
+  "scripts": {
+    "test": "node --test",
+    "update:amo": "node scripts/update-from-amo.mjs",
+    "build": "node scripts/build-extension.mjs",
+    "validate:manifest": "node scripts/validate-manifest.mjs"
+  },
+  "dependencies": {
+    "yauzl": "^3.2.0"
+  },
+  "devDependencies": {}
+}
