@@ -6,6 +6,7 @@ on:
       - master
 
 permissions:
+  actions: write
   contents: write
 
 jobs:
@@ -41,3 +42,5 @@ jobs:
             -f sha="$GITHUB_SHA"
 
           echo "Created tag $TAG for $GITHUB_SHA."
+          gh workflow run 04-publish-github-release-from-version-tag.yml --ref "$TAG"
+          echo "Dispatched release workflow for $TAG."
