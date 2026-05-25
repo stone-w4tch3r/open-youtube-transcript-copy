@@ -1,4 +1,4 @@
-name: CI
+name: Verify Source, Build, and Package Artifact
 
 on:
   pull_request:

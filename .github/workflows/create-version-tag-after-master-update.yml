@@ -1,4 +1,4 @@
-name: Tag Release
+name: Create Version Tag After Master Update
 
 on:
   push:

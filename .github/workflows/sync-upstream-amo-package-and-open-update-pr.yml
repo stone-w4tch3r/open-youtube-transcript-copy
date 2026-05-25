@@ -1,4 +1,4 @@
-name: Update From AMO
+name: Sync Upstream AMO Package and Open Update PR
 
 on:
   workflow_dispatch:

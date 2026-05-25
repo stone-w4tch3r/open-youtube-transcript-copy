@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node --test",
     "sync:local": "node scripts/update-from-amo.mjs",
-    "sync:github": "gh workflow run update-from-amo.yml",
+    "sync:github": "gh workflow run sync-upstream-amo-package-and-open-update-pr.yml",
     "update:amo": "node scripts/update-from-amo.mjs",
     "build:extension": "node scripts/validate-manifest.mjs && node scripts/build-extension.mjs",
     "build": "node scripts/build-extension.mjs",

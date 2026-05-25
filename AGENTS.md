@@ -71,7 +71,7 @@ open-youtube-transcript-copy/
   source/extension + README + UPSTREAM + .mirror
 ```
 
-`source/extension/` is generated from AMO, then lightly patched for this fork. Avoid casual manual edits there unless the goal is a deliberate fork change. If the goal is to sync upstream, use `npm run sync:local` or the `Update From AMO` workflow.
+`source/extension/` is generated from AMO, then lightly patched for this fork. Avoid casual manual edits there unless the goal is a deliberate fork change. If the goal is to sync upstream, use `npm run sync:local` or the **Sync Upstream AMO Package and Open Update PR** workflow.
 
 The fork patch currently changes the extension identity:
 
@@ -128,7 +128,7 @@ The upstream sync path is intentionally manual-only. GitHub scheduled workflows 
 Maintainer clicks workflow_dispatch
               |
               v
-       Update From AMO workflow
+Sync Upstream AMO Package and Open Update PR
               |
               v
           npm ci
@@ -176,9 +176,11 @@ The update PR can be created because repository Actions settings allow workflow 
 
 ---
 
-## CI Workflow
+## Verification Workflow
 
-`.github/workflows/ci.yml` runs on pushes to `main`/`master` and on pull requests.
+`.github/workflows/verify-source-build-and-package-artifact.yml` runs on pushes to `main`/`master` and on pull requests.
+
+GitHub Actions display name: **Verify Source, Build, and Package Artifact**.
 
 ```text
 push / pull_request
@@ -202,19 +204,19 @@ npm audit --audit-level=high
  upload dist/*.zip artifact
 ```
 
-Note: PRs created by `GITHUB_TOKEN` may not trigger a separate PR CI run. The `Update From AMO` workflow already runs tests, manifest validation, and build before opening the PR.
+Note: PRs created by `GITHUB_TOKEN` may not trigger a separate PR CI run. The **Sync Upstream AMO Package and Open Update PR** workflow already runs tests, manifest validation, and build before opening the PR.
 
 ---
 
 ## Release Flow
 
-GitHub releases are tag-driven. They can still be started manually, but the normal path is: merge an upstream update PR, let `Tag Release` create `v<manifest.version>`, then let `Release` publish the ZIP for that tag.
+GitHub releases are tag-driven. They can still be started manually, but the normal path is: merge an upstream update PR, let **Create Version Tag After Master Update** create `v<manifest.version>`, then let **Publish GitHub Release From Version Tag** publish the ZIP for that tag.
 
 ```text
 update PR merged to master
            |
            v
-     Tag Release workflow
+Create Version Tag After Master Update
            |
            v
 read source/extension/manifest.json
@@ -228,7 +230,7 @@ tag exists? ---- yes ----> stop
 create v<manifest.version>
     |
     v
-tag push triggers Release workflow
+tag push triggers Publish GitHub Release From Version Tag
     |
     v
 npm test + npm run build:extension
@@ -340,7 +342,7 @@ npm run sync:github
 Then inspect the run:
 
 ```bash
-gh run list --workflow update-from-amo.yml --limit 5
+gh run list --workflow sync-upstream-amo-package-and-open-update-pr.yml --limit 5
 ```
 
 ### Create Or Update GitHub Release Locally
@@ -424,7 +426,7 @@ seed branch with older AMO source/provenance
 push branch
         |
         v
-run Update From AMO workflow on that branch
+run Sync Upstream AMO Package and Open Update PR workflow on that branch
         |
         v
 expect PR: automation/update-from-amo -> test branch
@@ -445,6 +447,8 @@ Clean up after test branches. Do not merge synthetic rollback branches.
 - Default branch: `master`
 - Current extracted AMO version: see `source/extension/manifest.json`
 - Current upstream provenance: see `UPSTREAM.md`
-- GitHub release asset flow: automatic on `v*` tag push; manual `Release` workflow remains available
-- Upstream sync flow: manual `Update From AMO` workflow
+- Verification flow: `Verify Source, Build, and Package Artifact`
+- Upstream sync flow: manual `Sync Upstream AMO Package and Open Update PR`
+- Version tagging flow: automatic `Create Version Tag After Master Update`
+- GitHub release asset flow: automatic `Publish GitHub Release From Version Tag`; manual dispatch remains available
 - Scheduled sync: intentionally disabled
