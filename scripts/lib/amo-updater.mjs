@@ -9,7 +9,7 @@ import yauzl from 'yauzl';
 const DEFAULT_AMO_API_BASE = 'https://addons.mozilla.org/api/v5/addons/addon';
 const FORK_EXTENSION_ID = 'open-youtube-transcript-copy@stone-w4tch3r.github.io';
 const FORK_EXTENSION_NAME = 'Open YouTube Transcript Copier';
-const FORK_DESCRIPTION_PREFIX = 'Source-available fork;';
+const FORK_DESCRIPTION_PREFIX = 'Open fork;';
 
 export function verifySha256(buffer, expectedHash) {
   const expected = expectedHash.replace(/^sha256:/i, '').toLowerCase();
@@ -27,6 +27,7 @@ export function assertSafeArchivePath(entryName) {
   if (
     !normalized ||
     normalized === '.' ||
+    normalized === '..' ||
     normalized.startsWith('../') ||
     normalized.includes('/../') ||
     path.posix.isAbsolute(normalized) ||

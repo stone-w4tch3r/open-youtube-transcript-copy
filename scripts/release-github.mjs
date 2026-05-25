@@ -6,7 +6,8 @@ const manifest = JSON.parse(await readFile('source/extension/manifest.json', 'ut
 const tag = `v${manifest.version}`;
 
 const distFiles = await readdir('dist');
-const xpiFile = distFiles.find((f) => f.endsWith('.xpi'));
+const xpiFiles = distFiles.filter((f) => f.endsWith('.xpi')).sort();
+const xpiFile = xpiFiles[xpiFiles.length - 1];
 const artifact = xpiFile ? `dist/${xpiFile}` : `dist/open-youtube-transcript-copy-${manifest.version}.zip`;
 
 const title = `open-youtube-transcript-copy ${tag}`;

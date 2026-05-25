@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stone-w4tch3r/open-youtube-transcript-copy"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "description": "Unofficial open fork and provenance-tracked source extraction for YouTube Transcript Copy.",
   "scripts": {
     "test": "node --test",

@@ -63,6 +63,7 @@ test('verifySha256 rejects mismatched package hashes', () => {
 
 test('assertSafeArchivePath rejects traversal and absolute archive paths', () => {
   assert.equal(assertSafeArchivePath('manifest.json'), 'manifest.json');
+  assert.throws(() => assertSafeArchivePath('..'), /Unsafe archive path/);
   assert.throws(() => assertSafeArchivePath('../manifest.json'), /Unsafe archive path/);
   assert.throws(() => assertSafeArchivePath('/manifest.json'), /Unsafe archive path/);
   assert.throws(() => assertSafeArchivePath('nested/../../manifest.json'), /Unsafe archive path/);
@@ -154,7 +155,11 @@ test('patchManifestForFork gives the extracted extension a distinct public fork 
   assert.equal(patched.browser_specific_settings.gecko.strict_min_version, '115.0');
   assert.deepStrictEqual(patched.browser_specific_settings.gecko.data_collection_permissions, { required: ['none'] });
   assert.equal(patched.homepage_url, 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy');
-  assert.match(patched.description, /^Source-available fork;/);
+  assert.deepStrictEqual(patched.developer, {
+    name: 'stone-w4tch3r',
+    url: 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy',
+  });
+  assert.match(patched.description, /^Open fork;/);
   assert.match(patched.description, /Upstream description\./);
 });
 

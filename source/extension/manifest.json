@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Open YouTube Transcript Copier",
   "version": "1.0.8",
-  "description": "Source-available fork; Adds a 'Copy Transcript' button with settings next to the subscribe button on YouTube video pages.",
+  "description": "Open fork; Adds a 'Copy Transcript' button with settings next to the subscribe button on YouTube video pages.",
   "developer": {
     "name": "stone-w4tch3r",
     "url": "https://github.com/stone-w4tch3r/open-youtube-transcript-copy"

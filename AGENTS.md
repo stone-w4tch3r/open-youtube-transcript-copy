@@ -105,7 +105,8 @@ When editing README text, edit `docs/README.prepend.md` first. Running `npm run 
 | `npm run build:no-validate-manifest` | Build `dist/open-youtube-transcript-copy-<version>.zip` (unsigned, no validation). |
 | `npm run build:with-validate-manifest` | Validate manifest, then build unsigned ZIP artifact. |
 | `npm run sign:no-listing` | Validate manifest, then sign with `web-ext --channel unlisted`. Produces a signed `.xpi` in `dist/` for self-distribution on GitHub Releases. Requires `WEB_EXT_API_KEY` + `WEB_EXT_API_SECRET`. |
-| `npm run sign:with-listing` | Validate manifest, then sign and submit to AMO with `web-ext --channel listed`. Requires `WEB_EXT_API_KEY` + `WEB_EXT_API_SECRET`. |
+| `npm run sign:with-listing` | Validate manifest, sign with `web-ext --channel listed`, then update the AMO store listing description via `npm run update-amo-description`. Requires `WEB_EXT_API_KEY` + `WEB_EXT_API_SECRET`. |
+| `npm run update-amo-description` | Sync the AMO store listing description, summary, and metadata from `.amo-listing.json`. |
 | `npm run release:no-listing:local` | Sign (unlisted) → create or update GitHub Release with the signed `.xpi`. Requires `gh` auth + AMO API credentials. |
 | `npm run release:no-listing:ci` | Trigger the Publish GitHub Release workflow on CI. |
 | `npm run release:with-listing:local` | Alias for `npm run sign:with-listing`. |
@@ -198,7 +199,7 @@ push / pull_request
 npm run validate-manifest
         |
         v
-    npm run build
+npm run build:no-validate-manifest
         |
         v
 npm audit --audit-level=high
@@ -370,7 +371,7 @@ npm run release:no-listing:local
 
 Requires `gh` authentication with release permissions.
 
-### Build A Store Package
+### Build An Unsigned ZIP
 
 ```bash
 npm run build:with-validate-manifest

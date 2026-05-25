@@ -15,14 +15,24 @@ if (!apiKey || !apiSecret) {
   process.exit(1);
 }
 
-const manifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8'));
+let manifest;
+try {
+  manifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8'));
+} catch (err) {
+  throw new Error(`Failed to read or parse ${MANIFEST_PATH}: ${err.message}`);
+}
 const guid = manifest.browser_specific_settings?.gecko?.id;
 
 if (!guid) {
   throw new Error('Manifest is missing browser_specific_settings.gecko.id');
 }
 
-const desired = JSON.parse(await readFile(LISTING_PATH, 'utf8'));
+let desired;
+try {
+  desired = JSON.parse(await readFile(LISTING_PATH, 'utf8'));
+} catch (err) {
+  throw new Error(`Failed to read or parse ${LISTING_PATH}: ${err.message}`);
+}
 
 const jwt = createJWT(apiKey, apiSecret);
 
