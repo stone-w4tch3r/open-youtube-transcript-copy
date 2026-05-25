@@ -239,3 +239,16 @@ test('patchManifestForFork without options preserves upstream version (backward 
   assert.equal(patched.version_name, undefined);
   assert.equal(patched.name, 'Open YouTube Transcript Copier');
 });
+
+test('patchManifestForFork always sets MIT license required for AMO listed submissions', () => {
+  const patched = patchManifestForFork({
+    browser_specific_settings: {
+      gecko: { id: 'upstream@example.com' },
+    },
+    manifest_version: 3,
+    name: 'Upstream Name',
+    version: '1.0.9',
+  });
+
+  assert.equal(patched.license, 'MIT');
+});

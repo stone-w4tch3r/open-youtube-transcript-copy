@@ -120,6 +120,7 @@ export function patchManifestForFork(manifest, options = {}) {
   const patched = {
     ...manifest,
     name: FORK_EXTENSION_NAME,
+    license: 'MIT',
     description: `${FORK_DESCRIPTION_PREFIX} ${manifest.description ?? ''}`.trim(),
     homepage_url: 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy',
     developer: {
