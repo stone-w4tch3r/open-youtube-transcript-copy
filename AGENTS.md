@@ -178,7 +178,7 @@ The update PR can be created because repository Actions settings allow workflow 
 
 ## Verification Workflow
 
-`.github/workflows/verify-source-build-and-package-artifact.yml` runs on pushes to `main`/`master` and on pull requests.
+`.github/workflows/01-verify-source-build-and-package-artifact.yml` runs on pushes to `main`/`master` and on pull requests.
 
 GitHub Actions display name: **Verify Source, Build, and Package Artifact**.
 
@@ -342,7 +342,7 @@ npm run sync:github
 Then inspect the run:
 
 ```bash
-gh run list --workflow sync-upstream-amo-package-and-open-update-pr.yml --limit 5
+gh run list --workflow 02-sync-upstream-amo-package-and-open-update-pr.yml --limit 5
 ```
 
 ### Create Or Update GitHub Release Locally
