@@ -4,16 +4,16 @@ This repository is an unofficial open fork generated from the Mozilla Add-ons pa
 
 - Name: YouTube Transcript Copy
 - Slug: `youtube-transcript-copy`
-- Version: `1.0.8`
+- Version: `1.0.7`
 - Extension ID: `youtube-transcript-copier@dislikelever.com`
 - AMO listing: https://addons.mozilla.org/en-US/firefox/addon/youtube-transcript-copy/
-- XPI package: https://addons.mozilla.org/firefox/downloads/file/4791347/youtube_transcript_copy-1.0.8.xpi
-- SHA-256: `sha256:da261f4a523895bad2a6a6fd2d3f2183bfde72a2f1afcf127875ee9dc0492b09`
-- Package size: 28984 bytes
+- XPI package: https://addons.mozilla.org/firefox/downloads/file/4716855/youtube_transcript_copy-1.0.7.xpi
+- SHA-256: `sha256:6c99a655139d47c9ec55c9be18f63160215fcb8bcafd4a3c41bb9a2f58bdd87b`
+- Package size: 28766 bytes
 - License: [MIT License](https://spdx.org/licenses/MIT.html) (AMO slug: `MIT`)
 - Homepage: not listed
 - Support URL: not listed
-- Extracted at: 2026-05-25T06:58:48.438Z
+- Extracted at: 2026-05-25T07:59:57.165Z
 
 ## Upstream Authors
 
