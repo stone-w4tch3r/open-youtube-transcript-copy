@@ -15,6 +15,7 @@
     includeUrl: true, // <--- Add this line
     includeTimestamps: true,
     useParagraphs: false,
+    theme: 'dark',
   };
 
   // --- ROBUSTNESS VARIABLES ---
@@ -239,9 +240,16 @@
     });
   }
   
+  function applyThemeToUI(theme) {
+    const container = document.getElementById(randomContainerId);
+    if (container) container.setAttribute('data-theme', theme);
+    
+    const modal = document.querySelector('.modal-content-transcript');
+    if (modal) modal.setAttribute('data-theme', theme);
+  }
+
   // --- ADBLOCKER-RESISTANT STYLING ---
   function createResistantStyles() {
-    // Remove existing styles if they exist
     const existingStyle = document.getElementById('yt-transcript-styles');
     if (existingStyle) {
       existingStyle.remove();
@@ -250,7 +258,27 @@
     const style = document.createElement('style');
     style.id = 'yt-transcript-styles';
     style.textContent = `
-      /* Use randomized selectors and avoid suspicious keywords */
+      /* Theme Variables - Defaults to Dark */
+      #${randomContainerId}[data-theme="dark"] .${randomButtonClass},
+      .modal-content-transcript[data-theme="dark"] {
+        --yt-trans-bg: rgba(255, 255, 255, 0.1);
+        --yt-trans-bg-hover: rgba(255, 255, 255, 0.2);
+        --yt-trans-text: #f1f1f1;
+        --yt-trans-border: rgba(255, 255, 255, 0.2);
+        --yt-trans-modal-bg: #212121;
+        --yt-trans-icon: #f1f1f1;
+      }
+
+      #${randomContainerId}[data-theme="light"] .${randomButtonClass},
+      .modal-content-transcript[data-theme="light"] {
+        --yt-trans-bg: rgba(0, 0, 0, 0.05);
+        --yt-trans-bg-hover: rgba(0, 0, 0, 0.1);
+        --yt-trans-text: #0f0f0f;
+        --yt-trans-border: rgba(0, 0, 0, 0.1);
+        --yt-trans-modal-bg: #ffffff;
+        --yt-trans-icon: #0f0f0f;
+      }
+
       #${randomContainerId} {
         display: flex;
         margin-left: 8px;
@@ -270,8 +298,8 @@
         font-family: "Roboto", "Arial", sans-serif;
         border: none;
         cursor: pointer;
-        background-color: var(--yt-spec-brand-background-solid, rgb(36, 36, 36));
-        color: var(--yt-spec-text-primary, #0f0f0f);
+        background-color: var(--yt-trans-bg, rgba(255, 255, 255, 0.1));
+        color: var(--yt-trans-text, #f1f1f1);
         transition: background-color .3s;
         outline: none;
         text-decoration: none;
@@ -279,7 +307,7 @@
       }
       
       .${randomButtonClass}:hover {
-        background-color: var(--yt-spec-brand-background-secondary-hover, rgb(60, 60, 60));
+        background-color: var(--yt-trans-bg-hover, rgba(255, 255, 255, 0.2));
       }
       
       #${randomCopyBtnId} {
@@ -290,16 +318,15 @@
       #${randomSettingsBtnId} {
         border-radius: 0 18px 18px 0;
         padding: 0 10px;
-        border-left: 1px solid var(--yt-spec-10-percent-layer, #ccc);
+        border-left: 1px solid var(--yt-trans-border, rgba(255, 255, 255, 0.2));
       }
       
       #${randomSettingsBtnId} svg {
         width: 20px;
         height: 20px;
-        filter: var(--yt-spec-icon-inactive);
+        fill: var(--yt-trans-icon, #f1f1f1);
       }
       
-      /* Modal styles with randomized selectors */
       .modal-overlay-transcript {
         position: fixed;
         inset: 0;
@@ -311,13 +338,13 @@
       }
       
       .modal-content-transcript {
-        background-color: var(--yt-spec-base-background, #fff);
-        color: var(--yt-spec-text-primary, #0f0f0f);
+        background-color: var(--yt-trans-modal-bg, #212121);
+        color: var(--yt-trans-text, #f1f1f1);
         padding: 24px;
         border-radius: 12px;
         width: 90%;
         max-width: 450px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         font-family: "Roboto", "Arial", sans-serif;
       }
       
@@ -344,7 +371,7 @@
         appearance: none;
         width: 40px;
         height: 20px;
-        background-color: var(--yt-spec-brand-background-secondary-hover, #ccc);
+        background-color: #ccc;
         border-radius: 10px;
         position: relative;
         cursor: pointer;
@@ -418,6 +445,10 @@
       const container = document.createElement('div');
       container.id = randomContainerId;
       
+      getSettings().then(settings => {
+        applyThemeToUI(settings.theme || 'dark');
+      });
+
       // Add attributes that make it look like a legitimate YouTube component
       container.setAttribute('data-yt-extension', 'transcript-copier');
       container.setAttribute('role', 'group');
@@ -588,6 +619,10 @@
     modal.innerHTML = `
       <h2>Transcript Settings</h2>
       <div class="setting-item">
+          <label for="themeToggle">Dark Theme</label>
+          <input type="checkbox" id="themeToggle" class="custom-toggle">
+      </div>
+      <div class="setting-item">
           <label for="includeTitle">Include video title</label>
           <input type="checkbox" id="includeTitle" class="custom-toggle">
       </div>
@@ -622,14 +657,16 @@
   async function loadAndApplySettings() {
     try {
       const settings = await getSettings();
-      // Use logical OR to fallback to default if undefined
+      document.getElementById('themeToggle').checked = (settings.theme === 'dark' || settings.theme === undefined);
       document.getElementById('includeTitle').checked = settings.includeTitle;
       document.getElementById('includeUrl').checked = (settings.includeUrl !== undefined) ? settings.includeUrl : defaultSettings.includeUrl;
       document.getElementById('includeTimestamps').checked = settings.includeTimestamps;
       document.getElementById('useParagraphs').checked = settings.useParagraphs;
+      
+      applyThemeToUI(settings.theme || 'dark');
     } catch (e) {
       console.warn("Failed to load settings:", e);
-      // Apply default settings
+      document.getElementById('themeToggle').checked = (defaultSettings.theme === 'dark');
       document.getElementById('includeTitle').checked = defaultSettings.includeTitle;
       document.getElementById('includeUrl').checked = defaultSettings.includeUrl;
       document.getElementById('includeTimestamps').checked = defaultSettings.includeTimestamps;
@@ -638,8 +675,9 @@
   }
 
   function handleSettingsChange(e) {
+      const theme = document.getElementById('themeToggle').checked ? 'dark' : 'light';
       const includeTitle = document.getElementById('includeTitle').checked;
-      const includeUrl = document.getElementById('includeUrl').checked; // <--- Get new value
+      const includeUrl = document.getElementById('includeUrl').checked;
       let includeTimestamps = document.getElementById('includeTimestamps').checked;
       let useParagraphs = document.getElementById('useParagraphs').checked;
 
@@ -652,7 +690,12 @@
           document.getElementById('useParagraphs').checked = false;
       }
 
-      const newSettings = { includeTitle, includeUrl, includeTimestamps, useParagraphs };
+      // Apply the theme live to the UI immediately
+      if (e.target.id === 'themeToggle') {
+          applyThemeToUI(theme);
+      }
+
+      const newSettings = { theme, includeTitle, includeUrl, includeTimestamps, useParagraphs };
       setSettings(newSettings);
   }
 
