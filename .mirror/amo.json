@@ -8,9 +8,9 @@
     }
   ],
   "description": "The purpose of this extension is to provide users with a simple, one-click button to copy the transcript of a YouTube video. This eliminates the tedious process of manually opening the transcript panel, highlighting all the text, copying it, and cleaning it up.\n\nThe extension enhances this core function with user-configurable settings, such as including the video title, adding timestamps, or formatting the transcript into a single paragraph. All features directly serve the primary purpose of easily extracting and formatting video transcripts for the user's own use.\n\nThe extension was made because I needed an extension with this functionality but wanted a clean UI and ease of access. Keep your coffee money, I don't need anything. Thank you!",
-  "fileHash": "sha256:da261f4a523895bad2a6a6fd2d3f2183bfde72a2f1afcf127875ee9dc0492b09",
-  "fileSize": 28984,
-  "fileUrl": "https://addons.mozilla.org/firefox/downloads/file/4791347/youtube_transcript_copy-1.0.8.xpi",
+  "fileHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "fileSize": 28000,
+  "fileUrl": "https://addons.mozilla.org/firefox/downloads/file/4790000/youtube_transcript_copy-1.0.7.xpi",
   "guid": "youtube-transcript-copier@dislikelever.com",
   "homepage": null,
   "licenseName": "MIT License",
@@ -20,5 +20,5 @@
   "slug": "youtube-transcript-copy",
   "supportUrl": null,
   "updatedAt": "2026-05-25T12:00:53.589Z",
-  "version": "1.0.8"
+  "version": "1.0.7"
 }
