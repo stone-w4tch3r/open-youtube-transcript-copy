@@ -8,7 +8,7 @@ const artifactName = `open-youtube-transcript-copy-${manifest.version}.zip`;
 await rm('dist', { recursive: true, force: true });
 await mkdir('dist', { recursive: true });
 
-await run('zip', ['-r', `../../dist/${artifactName}`, '.'], { cwd: 'source/extension' });
+await run('zip', ['-r', `../../dist/${artifactName}`, '.', '-x', '.amo-upload-uuid'], { cwd: 'source/extension' });
 
 console.log(`Built dist/${artifactName}`);
 
