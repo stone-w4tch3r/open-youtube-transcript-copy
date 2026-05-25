@@ -12,6 +12,7 @@
     "build:extension": "node scripts/validate-manifest.mjs && node scripts/build-extension.mjs",
     "build": "node scripts/build-extension.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
+    "release:github": "npm run build:extension && node scripts/release-github.mjs",
     "publish:amo": "npm run build:extension && npx web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed"
   },
   "dependencies": {

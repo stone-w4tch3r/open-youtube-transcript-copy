@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -120,6 +120,16 @@ export function patchManifestForFork(manifest) {
   };
 }
 
+export function shouldSkipUpdate(existingMetadata, incomingMetadata) {
+  if (!existingMetadata) return false;
+
+  return (
+    existingMetadata.version === incomingMetadata.version &&
+    existingMetadata.fileUrl === incomingMetadata.fileUrl &&
+    existingMetadata.fileHash === incomingMetadata.fileHash
+  );
+}
+
 export async function fetchAddonMetadata(slug, fetchImpl = fetch, apiBase = DEFAULT_AMO_API_BASE) {
   const response = await fetchImpl(`${apiBase}/${encodeURIComponent(slug)}/`);
   if (!response.ok) {
@@ -194,20 +204,28 @@ export async function updateFromAmo(options = {}) {
 
   const addon = await fetchAddonMetadata(slug, fetchImpl);
   const metadata = normalizeAddonMetadata(addon, updatedAt);
+  const mirrorPath = path.join(rootDir, '.mirror/amo.json');
+  const extensionManifestPath = path.join(rootDir, 'source/extension/manifest.json');
+  const existingMetadata = await readJsonIfExists(mirrorPath);
+
+  if (shouldSkipUpdate(existingMetadata, metadata) && await pathExists(extensionManifestPath)) {
+    return { ...existingMetadata, changed: false };
+  }
+
   const packageBuffer = await downloadPackage(metadata.fileUrl, fetchImpl);
 
   verifySha256(packageBuffer, metadata.fileHash);
   await extractXpiBuffer(packageBuffer, path.join(rootDir, 'source/extension'));
-  await patchExtractedManifest(path.join(rootDir, 'source/extension/manifest.json'));
+  await patchExtractedManifest(extensionManifestPath);
 
   await mkdir(path.join(rootDir, '.mirror'), { recursive: true });
-  await writeFile(path.join(rootDir, '.mirror/amo.json'), `${JSON.stringify(metadata, null, 2)}\n`);
+  await writeFile(mirrorPath, `${JSON.stringify(metadata, null, 2)}\n`);
 
   const prepend = await readText(path.join(rootDir, 'docs/README.prepend.md'));
   await writeFile(path.join(rootDir, 'README.md'), renderReadme(prepend, metadata));
   await writeFile(path.join(rootDir, 'UPSTREAM.md'), renderUpstreamMarkdown(metadata));
 
-  return metadata;
+  return { ...metadata, changed: true };
 }
 
 async function patchExtractedManifest(manifestPath) {
@@ -218,6 +236,25 @@ async function patchExtractedManifest(manifestPath) {
 async function readText(filePath) {
   const { readFile } = await import('node:fs/promises');
   return readFile(filePath, 'utf8');
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readText(filePath));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function pathExists(filePath) {
+  try {
+    await access(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 function openZipBuffer(buffer) {

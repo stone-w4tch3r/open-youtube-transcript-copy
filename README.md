@@ -18,6 +18,7 @@ Upstream sync is intentionally manual. If the AMO listing publishes a new versio
 | `npm run sync:local` | Download, verify, extract, and regenerate provenance docs from AMO locally. |
 | `npm run sync:github` | Manually start the GitHub Actions AMO sync workflow. |
 | `npm run build:extension` | Validate the manifest and build a ZIP artifact from `source/extension/`. |
+| `npm run release:github` | Build and create or update the GitHub release for the manifest version. |
 | `npm run publish:amo` | Build and submit the extension to AMO with `web-ext`; requires AMO API credentials. |
 
 ## Upstream Description

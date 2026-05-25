@@ -12,6 +12,7 @@ import {
   patchManifestForFork,
   renderReadme,
   renderUpstreamMarkdown,
+  shouldSkipUpdate,
   verifySha256,
 } from '../scripts/lib/amo-updater.mjs';
 
@@ -151,4 +152,22 @@ test('patchManifestForFork gives the extracted extension a distinct fork identit
   assert.equal(patched.name, 'open-youtube-transcript-copy');
   assert.equal(patched.browser_specific_settings.gecko.id, 'open-youtube-transcript-copy@stone-w4tch3r.github.io');
   assert.match(patched.description, /Unofficial open fork/);
+});
+
+test('shouldSkipUpdate returns true when AMO package identity has not changed', () => {
+  const existing = normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z');
+  const incoming = normalizeAddonMetadata(sampleAddon, '2026-05-25T00:00:00.000Z');
+
+  assert.equal(shouldSkipUpdate(existing, incoming), true);
+});
+
+test('shouldSkipUpdate returns false when AMO package hash changes', () => {
+  const existing = normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z');
+  const incoming = {
+    ...existing,
+    fileHash: 'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+    updatedAt: '2026-05-25T00:00:00.000Z',
+  };
+
+  assert.equal(shouldSkipUpdate(existing, incoming), false);
 });
