@@ -107,8 +107,17 @@ Mozilla signing artifacts under \`META-INF/\` are not copied into \`source/exten
 `;
 }
 
-export function patchManifestForFork(manifest) {
-  return {
+export function bumpPatchVersion(version) {
+  const parts = version.split('.');
+  const patch = parseInt(parts[parts.length - 1], 10);
+  parts[parts.length - 1] = String(patch + 1);
+  return parts.join('.');
+}
+
+export function patchManifestForFork(manifest, options = {}) {
+  const { forkVersion, upstreamVersion } = options;
+
+  const patched = {
     ...manifest,
     name: FORK_EXTENSION_NAME,
     description: `${FORK_DESCRIPTION_PREFIX} ${manifest.description ?? ''}`.trim(),
@@ -129,6 +138,16 @@ export function patchManifestForFork(manifest) {
       },
     },
   };
+
+  if (forkVersion) {
+    patched.version = forkVersion;
+  }
+
+  if (upstreamVersion) {
+    patched.version_name = `${patched.version} (upstream ${upstreamVersion})`;
+  }
+
+  return patched;
 }
 
 export function shouldSkipUpdate(existingMetadata, incomingMetadata) {
@@ -223,11 +242,18 @@ export async function updateFromAmo(options = {}) {
     return { ...existingMetadata, changed: false };
   }
 
+  const existingForkVersion = await readForkVersion(extensionManifestPath, metadata.version);
+
+  let forkVersion = existingForkVersion;
+  if (existingMetadata) {
+    forkVersion = bumpPatchVersion(existingForkVersion);
+  }
+
   const packageBuffer = await downloadPackage(metadata.fileUrl, fetchImpl);
 
   verifySha256(packageBuffer, metadata.fileHash);
   await extractXpiBuffer(packageBuffer, path.join(rootDir, 'source/extension'));
-  await patchExtractedManifest(extensionManifestPath);
+  await patchExtractedManifest(extensionManifestPath, forkVersion, metadata.version);
 
   await mkdir(path.join(rootDir, '.mirror'), { recursive: true });
   await writeFile(mirrorPath, `${JSON.stringify(metadata, null, 2)}\n`);
@@ -239,9 +265,21 @@ export async function updateFromAmo(options = {}) {
   return { ...metadata, changed: true };
 }
 
-async function patchExtractedManifest(manifestPath) {
+async function readForkVersion(manifestPath, upstreamVersion) {
+  try {
+    const manifest = JSON.parse(await readText(manifestPath));
+    return manifest.version ?? upstreamVersion;
+  } catch {
+    return upstreamVersion;
+  }
+}
+
+async function patchExtractedManifest(manifestPath, forkVersion, upstreamVersion) {
   const manifest = JSON.parse(await readText(manifestPath));
-  await writeFile(manifestPath, `${JSON.stringify(patchManifestForFork(manifest), null, 2)}\n`);
+  await writeFile(
+    manifestPath,
+    `${JSON.stringify(patchManifestForFork(manifest, { forkVersion, upstreamVersion }), null, 2)}\n`,
+  );
 }
 
 async function readText(filePath) {

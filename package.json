@@ -23,9 +23,8 @@
     "sign:no-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel unlisted",
     "sign:with-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed && npm run update-amo-description",
     "release:no-listing:local": "npm run sign:no-listing && node scripts/release-github.mjs",
-    "release:no-listing:ci": "gh workflow run 04-publish-github-release-from-version-tag.yml",
-    "release:with-listing:local": "npm run sign:with-listing",
-    "release:with-listing:ci": "gh workflow run 05-publish-to-amo-store.yml"
+    "release:ci": "gh workflow run 04-publish-to-amo-store-and-github-release.yml",
+    "release:with-listing:local": "npm run sign:with-listing"
   },
   "dependencies": {
     "yauzl": "^3.2.0"

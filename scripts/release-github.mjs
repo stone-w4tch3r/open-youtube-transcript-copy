@@ -11,9 +11,9 @@ const xpiFile = xpiFiles[xpiFiles.length - 1];
 const artifact = xpiFile ? `dist/${xpiFile}` : `dist/open-youtube-transcript-copy-${manifest.version}.zip`;
 
 const title = `open-youtube-transcript-copy ${tag}`;
-const signedNote = xpiFile
-  ? 'Signed by Mozilla AMO for self-distribution (unlisted channel). Installable in Firefox Release/Beta via "Install Add-on From File" in about:addons.'
-  : 'Unsigned development build. Not installable in Firefox Release/Beta without add-on signing disabled.';
+  const signedNote = xpiFile
+    ? 'Signed by Mozilla AMO (listed channel). Installable from the Firefox Add-ons store or via "Install Add-on From File" in about:addons.'
+    : 'Unsigned development build. Not installable in Firefox Release/Beta without add-on signing disabled.';
 
 const notes = `${signedNote}\n\nBuilt from the open-youtube-transcript-copy source tree for extension version ${manifest.version}.\n\nSee UPSTREAM.md for AMO package provenance.`;
 

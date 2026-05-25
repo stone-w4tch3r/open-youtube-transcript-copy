@@ -1,4 +1,4 @@
-name: Publish GitHub Release From Version Tag
+name: Publish to AMO Store and GitHub Release
 
 on:
   push:
@@ -27,8 +27,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Sign extension (unlisted, self-distribution)
-        run: npm run sign:no-listing
+      - name: Sign extension (listed, AMO store submission)
+        run: npm run sign:with-listing
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}

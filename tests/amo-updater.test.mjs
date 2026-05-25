@@ -7,6 +7,7 @@ import { test } from 'node:test';
 
 import {
   assertSafeArchivePath,
+  bumpPatchVersion,
   extractXpiBuffer,
   normalizeAddonMetadata,
   patchManifestForFork,
@@ -179,4 +180,62 @@ test('shouldSkipUpdate returns false when AMO package hash changes', () => {
   };
 
   assert.equal(shouldSkipUpdate(existing, incoming), false);
+});
+
+test('bumpPatchVersion increments the last numeric component', () => {
+  assert.equal(bumpPatchVersion('2.0.0'), '2.0.1');
+  assert.equal(bumpPatchVersion('2.0.9'), '2.0.10');
+  assert.equal(bumpPatchVersion('1.0.8.1'), '1.0.8.2');
+  assert.equal(bumpPatchVersion('0.0.0'), '0.0.1');
+});
+
+test('patchManifestForFork with forkVersion replaces version and keeps identity patch', () => {
+  const patched = patchManifestForFork(
+    {
+      browser_specific_settings: {
+        gecko: { id: 'youtube-transcript-copier@dislikelever.com' },
+      },
+      description: 'Upstream description.',
+      manifest_version: 3,
+      name: 'YouTube Transcript Copier',
+      version: '1.0.9',
+    },
+    { forkVersion: '2.0.1' },
+  );
+
+  assert.equal(patched.version, '2.0.1');
+  assert.equal(patched.name, 'Open YouTube Transcript Copier');
+  assert.equal(patched.browser_specific_settings.gecko.id, 'open-youtube-transcript-copy@stone-w4tch3r.github.io');
+});
+
+test('patchManifestForFork with upstreamVersion sets version_name for provenance display', () => {
+  const patched = patchManifestForFork(
+    {
+      browser_specific_settings: {
+        gecko: { id: 'upstream@example.com' },
+      },
+      manifest_version: 3,
+      name: 'Upstream Name',
+      version: '1.0.9',
+    },
+    { forkVersion: '2.0.1', upstreamVersion: '1.0.9' },
+  );
+
+  assert.equal(patched.version, '2.0.1');
+  assert.equal(patched.version_name, '2.0.1 (upstream 1.0.9)');
+});
+
+test('patchManifestForFork without options preserves upstream version (backward compat)', () => {
+  const patched = patchManifestForFork({
+    browser_specific_settings: {
+      gecko: { id: 'upstream@example.com' },
+    },
+    manifest_version: 3,
+    name: 'Upstream Name',
+    version: '1.0.9',
+  });
+
+  assert.equal(patched.version, '1.0.9');
+  assert.equal(patched.version_name, undefined);
+  assert.equal(patched.name, 'Open YouTube Transcript Copier');
 });
