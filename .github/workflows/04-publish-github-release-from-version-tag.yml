@@ -30,8 +30,8 @@ jobs:
       - name: Sign extension (listed, AMO store submission)
         run: npm run sign:with-listing
         env:
-          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
-          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
 
       - name: Create or update GitHub release
         run: node scripts/release-github.mjs
