@@ -28,12 +28,14 @@ jobs:
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
       - name: Create release tag when missing
+        id: tag
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.manifest.outputs.tag }}
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists."
+            echo "created=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -41,4 +43,13 @@ jobs:
             -f ref="refs/tags/$TAG" \
             -f sha="$GITHUB_SHA"
 
+          echo "created=true" >> "$GITHUB_OUTPUT"
           echo "Created tag $TAG for $GITHUB_SHA."
+
+      - name: Dispatch release workflow
+        if: steps.tag.outputs.created == 'true'
+        run: |
+          gh workflow run "Publish to AMO Store and GitHub Release" \
+            --ref "refs/tags/${{ steps.manifest.outputs.tag }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
