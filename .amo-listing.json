@@ -1,0 +1,23 @@
+{
+  "description": {
+    "en-US": "Source-available open fork of YouTube Transcript Copy. See <https://github.com/stone-w4tch3r/open-youtube-transcript-copy> Adds a convenient \"Copy Transcript\" button directly to YouTube video pages, making it easy to extract and copy video transcripts for research, note-taking, or content creation.\n\nThe extension enhances this core function with user-configurable settings, such as including the video title, adding timestamps, or formatting the transcript into a single paragraph. All features directly serve the primary purpose of easily extracting and formatting video transcripts for the user's own use."
+  },
+  "summary": {
+    "en-US": "One-click YouTube transcript copying with configurable formatting options."
+  },
+  "homepage": {
+    "en-US": "https://github.com/stone-w4tch3r/open-youtube-transcript-copy"
+  },
+  "tags": [
+    "youtube"
+  ],
+  "categories": {
+    "firefox": [
+      "other"
+    ]
+  },
+  "contributions_url": "",
+  "default_locale": "en-US",
+  "is_experimental": false,
+  "requires_payment": false
+}

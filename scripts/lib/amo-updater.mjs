@@ -112,6 +112,10 @@ export function patchManifestForFork(manifest) {
     name: FORK_EXTENSION_NAME,
     description: `${FORK_DESCRIPTION_PREFIX} ${manifest.description ?? ''}`.trim(),
     homepage_url: 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy',
+    developer: {
+      name: 'stone-w4tch3r',
+      url: 'https://github.com/stone-w4tch3r/open-youtube-transcript-copy',
+    },
     browser_specific_settings: {
       ...manifest.browser_specific_settings,
       gecko: {
