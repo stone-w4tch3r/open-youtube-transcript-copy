@@ -21,7 +21,7 @@
     "validate-manifest": "node scripts/validate-manifest.mjs",
     "update-amo-description": "node scripts/update-amo-listing.mjs",
     "sign:no-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel unlisted",
-    "sign:with-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed && npm run update-amo-description",
+    "sign:with-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed --amo-metadata .amo-metadata.json && npm run update-amo-description",
     "release:no-listing:local": "npm run sign:no-listing && node scripts/release-github.mjs",
     "release:ci": "gh workflow run 04-publish-to-amo-store-and-github-release.yml",
     "release:with-listing:local": "npm run sign:with-listing"
