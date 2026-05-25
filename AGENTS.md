@@ -101,20 +101,23 @@ When editing README text, edit `docs/README.prepend.md` first. Running `npm run 
 | Command | Use |
 | --- | --- |
 | `npm test` | Run Node test suite. |
+| `npm run validate-manifest` | Check required extension manifest fields. |
+| `npm run build:no-validate-manifest` | Build `dist/open-youtube-transcript-copy-<version>.zip` (unsigned, no validation). |
+| `npm run build:with-validate-manifest` | Validate manifest, then build unsigned ZIP artifact. |
+| `npm run sign:no-listing` | Validate manifest, then sign with `web-ext --channel unlisted`. Produces a signed `.xpi` in `dist/` for self-distribution on GitHub Releases. Requires `WEB_EXT_API_KEY` + `WEB_EXT_API_SECRET`. |
+| `npm run sign:with-listing` | Validate manifest, then sign and submit to AMO with `web-ext --channel listed`. Requires `WEB_EXT_API_KEY` + `WEB_EXT_API_SECRET`. |
+| `npm run release:no-listing:local` | Sign (unlisted) → create or update GitHub Release with the signed `.xpi`. Requires `gh` auth + AMO API credentials. |
+| `npm run release:no-listing:ci` | Trigger the Publish GitHub Release workflow on CI. |
+| `npm run release:with-listing:local` | Alias for `npm run sign:with-listing`. |
+| `npm run release:with-listing:ci` | Trigger the Publish to AMO Store workflow on CI. |
 | `npm run sync:local` | Pull latest AMO package locally, verify hash, update generated files if AMO changed. |
-| `npm run sync:github` | Manually start the GitHub upstream sync workflow. |
-| `npm run update:amo` | Alias for the AMO updater CLI; used by workflows. |
-| `npm run validate:manifest` | Check required extension manifest fields. |
-| `npm run build` | Build `dist/open-youtube-transcript-copy-<version>.zip`. |
-| `npm run build:extension` | Validate manifest, then build ZIP artifact. |
-| `npm run release:github` | Build and create/update GitHub release for the manifest version. |
-| `npm run publish:amo` | Build and submit to AMO with `web-ext`; requires AMO credentials. |
+| `npm run sync:ci` | Trigger the upstream sync workflow on CI. |
 
 Recommended local verification before pushing meaningful changes:
 
 ```bash
 npm test
-npm run build:extension
+npm run build:with-validate-manifest
 npm audit --audit-level=high
 ```
 
@@ -134,7 +137,7 @@ Sync Upstream AMO Package and Open Update PR
           npm ci
               |
               v
-       npm run update:amo
+       npm run sync:local
               |
               v
   changed? ---------------- no ------------------+
@@ -192,7 +195,7 @@ push / pull_request
      npm test
         |
         v
-npm run validate:manifest
+npm run validate-manifest
         |
         v
     npm run build
@@ -210,7 +213,7 @@ Note: PRs created by `GITHUB_TOKEN` may not trigger a separate PR CI run. The **
 
 ## Release Flow
 
-GitHub releases are tag-driven. They can still be started manually, but the normal path is: merge an upstream update PR, let **Create Version Tag After Master Update** create `v<manifest.version>`, then let **Publish GitHub Release From Version Tag** publish the ZIP for that tag.
+GitHub releases are tag-driven. They can still be started manually, but the normal path is: merge an upstream update PR, let **Create Version Tag After Master Update** create `v<manifest.version>`, then let **Publish GitHub Release From Version Tag** sign and publish the signed `.xpi` for that tag.
 
 ```text
 update PR merged to master
@@ -233,16 +236,30 @@ create v<manifest.version>
 tag push triggers Publish GitHub Release From Version Tag
     |
     v
-npm test + npm run build:extension
+npm test + npm run sign:no-listing
     |
     v
 scripts/release-github.mjs
     |
     v
-upload dist/open-youtube-transcript-copy-<version>.zip
+upload signed dist/*.xpi to GitHub Release
 ```
 
-The release script uses `source/extension/manifest.json` as the version source of truth. For version `1.0.8`, the tag is `v1.0.8` and the asset is `open-youtube-transcript-copy-1.0.8.zip`.
+The release script uses `source/extension/manifest.json` as the version source of truth. For version `1.0.8`, the tag is `v1.0.8` and the asset is the signed `.xpi` produced by `web-ext sign --channel unlisted`.
+
+### AMO Store Publication
+
+To submit to the AMO public listing (reviewed, listed for all Firefox users):
+
+```bash
+# Locally
+npm run release:with-listing:local
+
+# Via GitHub Actions
+gh workflow run 05-publish-to-amo-store.yml
+```
+
+Both require `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` in the environment (local) or in GitHub Actions secrets (`AMO_API_KEY`, `AMO_API_SECRET`).
 
 ---
 
@@ -323,7 +340,7 @@ When changing updater behavior, add or update tests first. Good regression targe
 npm run sync:local
 git diff --stat
 npm test
-npm run build:extension
+npm run build:with-validate-manifest
 ```
 
 Expected no-change output includes:
@@ -336,7 +353,7 @@ Current verified package is sha256:<hash>.
 ### Start Upstream Sync On GitHub
 
 ```bash
-npm run sync:github
+npm run sync:ci
 ```
 
 Then inspect the run:
@@ -348,7 +365,7 @@ gh run list --workflow 02-sync-upstream-amo-package-and-open-update-pr.yml --lim
 ### Create Or Update GitHub Release Locally
 
 ```bash
-npm run release:github
+npm run release:no-listing:local
 ```
 
 Requires `gh` authentication with release permissions.
@@ -356,7 +373,7 @@ Requires `gh` authentication with release permissions.
 ### Build A Store Package
 
 ```bash
-npm run build:extension
+npm run build:with-validate-manifest
 ```
 
 The unsigned ZIP appears in `dist/`.
@@ -364,7 +381,7 @@ The unsigned ZIP appears in `dist/`.
 ### Submit To AMO
 
 ```bash
-npm run publish:amo
+npm run release:with-listing:local
 ```
 
 This uses `web-ext sign`, so it requires AMO API credentials in the environment expected by `web-ext`. Do not commit credentials.
@@ -392,7 +409,7 @@ Before committing:
 [ ] Change is scoped and intentional.
 [ ] Generated files were changed only by sync/build logic or intentionally edited.
 [ ] npm test passes.
-[ ] npm run build:extension passes when build/release/sync logic changed.
+[ ] npm run build:with-validate-manifest passes when build/release/sync logic changed.
 [ ] npm audit --audit-level=high passes when dependencies changed.
 [ ] UPSTREAM.md and .mirror/amo.json agree after upstream sync.
 [ ] README.md matches docs/README.prepend.md plus upstream description.

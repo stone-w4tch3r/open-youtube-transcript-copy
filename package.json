@@ -7,16 +7,21 @@
   "scripts": {
     "test": "node --test",
     "sync:local": "node scripts/update-from-amo.mjs",
-    "sync:github": "gh workflow run 02-sync-upstream-amo-package-and-open-update-pr.yml",
-    "update:amo": "node scripts/update-from-amo.mjs",
-    "build:extension": "node scripts/validate-manifest.mjs && node scripts/build-extension.mjs",
-    "build": "node scripts/build-extension.mjs",
-    "validate:manifest": "node scripts/validate-manifest.mjs",
-    "release:github": "npm run build:extension && node scripts/release-github.mjs",
-    "publish:amo": "npm run build:extension && npx web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed"
+    "sync:ci": "gh workflow run 02-sync-upstream-amo-package-and-open-update-pr.yml",
+    "build:no-validate-manifest": "node scripts/build-extension.mjs",
+    "build:with-validate-manifest": "npm run validate-manifest && npm run build:no-validate-manifest",
+    "validate-manifest": "node scripts/validate-manifest.mjs",
+    "sign:no-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel unlisted",
+    "sign:with-listing": "npm run validate-manifest && web-ext sign --source-dir source/extension --artifacts-dir dist --channel listed",
+    "release:no-listing:local": "npm run sign:no-listing && node scripts/release-github.mjs",
+    "release:no-listing:ci": "gh workflow run 04-publish-github-release-from-version-tag.yml",
+    "release:with-listing:local": "npm run sign:with-listing",
+    "release:with-listing:ci": "gh workflow run 05-publish-to-amo-store.yml"
   },
   "dependencies": {
     "yauzl": "^3.2.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "web-ext": "^8.0.0"
+  }
 }

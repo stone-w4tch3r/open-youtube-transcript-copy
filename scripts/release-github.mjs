@@ -1,12 +1,20 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 
 const manifest = JSON.parse(await readFile('source/extension/manifest.json', 'utf8'));
 const tag = `v${manifest.version}`;
-const artifact = `dist/open-youtube-transcript-copy-${manifest.version}.zip`;
+
+const distFiles = await readdir('dist');
+const xpiFile = distFiles.find((f) => f.endsWith('.xpi'));
+const artifact = xpiFile ? `dist/${xpiFile}` : `dist/open-youtube-transcript-copy-${manifest.version}.zip`;
+
 const title = `open-youtube-transcript-copy ${tag}`;
-const notes = `Built from the open-youtube-transcript-copy source tree for extension version ${manifest.version}.\n\nSee UPSTREAM.md for AMO package provenance.`;
+const signedNote = xpiFile
+  ? 'Signed by Mozilla AMO for self-distribution (unlisted channel). Installable in Firefox Release/Beta via "Install Add-on From File" in about:addons.'
+  : 'Unsigned development build. Not installable in Firefox Release/Beta without add-on signing disabled.';
+
+const notes = `${signedNote}\n\nBuilt from the open-youtube-transcript-copy source tree for extension version ${manifest.version}.\n\nSee UPSTREAM.md for AMO package provenance.`;
 
 if (run('gh', ['release', 'view', tag], { allowFailure: true }).status === 0) {
   run('gh', ['release', 'upload', tag, artifact, '--clobber']);

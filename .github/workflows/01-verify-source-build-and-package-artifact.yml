@@ -26,10 +26,10 @@ jobs:
         run: npm test
 
       - name: Validate extension manifest
-        run: npm run validate:manifest
+        run: npm run validate-manifest
 
       - name: Build extension artifact
-        run: npm run build
+        run: npm run build:no-validate-manifest
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
