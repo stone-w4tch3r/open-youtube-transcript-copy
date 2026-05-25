@@ -1,0 +1,43 @@
+name: Tag Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Read manifest version
+        id: manifest
+        run: |
+          version="$(node -p "JSON.parse(require('fs').readFileSync('source/extension/manifest.json', 'utf8')).version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create release tag when missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.manifest.outputs.tag }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+            exit 0
+          fi
+
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$TAG" \
+            -f sha="$GITHUB_SHA"
+
+          echo "Created tag $TAG for $GITHUB_SHA."

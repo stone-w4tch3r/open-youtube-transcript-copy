@@ -1,14 +1,12 @@
 # open-youtube-transcript-copy
 
-This is an unofficial open fork of the Firefox extension distributed on Mozilla Add-ons as **YouTube Transcript Copy**.
+Source-available unofficial fork of the Firefox extension distributed on Mozilla Add-ons as **YouTube Transcript Copy**.
 
-The original AMO listing does not publish a source repository. This repository extracts the AMO-distributed `.xpi`, verifies the package hash published by AMO, and keeps the resulting source visible in Git history.
+This repo extracts the AMO `.xpi`, verifies the AMO SHA-256 hash, and keeps source/provenance visible in Git history. It is not affiliated with or endorsed by the original author.
 
-AMO reports the upstream add-on license as **MIT License**. Upstream author, version, package URL, and hash metadata are preserved in `UPSTREAM.md` and `.mirror/amo.json`.
+See `AGENTS.md` for workflows, automation details, and maintenance rules.
 
-This repository is not affiliated with or endorsed by the original author. If an official upstream source repository becomes available, this fork should link to it and reconsider the mirroring workflow.
-
-Upstream sync is intentionally manual. If the AMO listing publishes a new version or if this repository falls behind, please open an issue with the AMO version number or package URL.
+If the AMO listing publishes a new version or this repo falls behind, please open an issue with the AMO version number or package URL.
 
 ## Commands
 

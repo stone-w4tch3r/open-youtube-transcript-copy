@@ -136,7 +136,7 @@ test('extractXpiBuffer extracts source files and omits Mozilla signing artifacts
   await assert.rejects(() => readFile(path.join(outputDir, 'META-INF/mozilla.sf'), 'utf8'), /ENOENT/);
 });
 
-test('patchManifestForFork gives the extracted extension a distinct fork identity', () => {
+test('patchManifestForFork gives the extracted extension a distinct public fork identity', () => {
   const patched = patchManifestForFork({
     browser_specific_settings: {
       gecko: {
@@ -149,9 +149,10 @@ test('patchManifestForFork gives the extracted extension a distinct fork identit
     version: '1.0.8',
   });
 
-  assert.equal(patched.name, 'open-youtube-transcript-copy');
+  assert.equal(patched.name, 'Open YouTube Transcript Copier');
   assert.equal(patched.browser_specific_settings.gecko.id, 'open-youtube-transcript-copy@stone-w4tch3r.github.io');
-  assert.match(patched.description, /Unofficial open fork/);
+  assert.match(patched.description, /^Source-available fork; source: https:\/\/github\.com\/stone-w4tch3r\/open-youtube-transcript-copy\./);
+  assert.match(patched.description, /Upstream description\./);
 });
 
 test('shouldSkipUpdate returns true when AMO package identity has not changed', () => {
