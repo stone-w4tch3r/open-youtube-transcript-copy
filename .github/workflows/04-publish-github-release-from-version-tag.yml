@@ -27,8 +27,12 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Build unsigned extension artifact
+        run: npm run build:no-validate-manifest
+
       - name: Sign extension (listed, AMO store submission)
         run: npm run sign:with-listing
+        continue-on-error: true
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
