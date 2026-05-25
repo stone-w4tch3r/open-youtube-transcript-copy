@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: npm
@@ -54,7 +54,7 @@ jobs:
 
       - name: Create update pull request
         if: steps.changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/update-from-amo
           delete-branch: true
@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload extension artifact
         if: steps.changes.outputs.changed == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: open-youtube-transcript-copy
           path: dist/*.zip
