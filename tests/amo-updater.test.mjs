@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -14,6 +15,7 @@ import {
   renderReadme,
   renderUpstreamMarkdown,
   shouldSkipUpdate,
+  updateFromAmo,
   verifySha256,
 } from '../scripts/lib/amo-updater.mjs';
 
@@ -43,7 +45,24 @@ const sampleAddon = {
   },
   guid: 'youtube-transcript-copier@dislikelever.com',
   homepage: null,
+  icon_url: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=example',
+  icons: {
+    32: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-32.png?modified=example',
+    64: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=example',
+    128: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-128.png?modified=example',
+  },
   name: { 'en-US': 'YouTube Transcript Copy' },
+  previews: [
+    {
+      id: 323201,
+      caption: { 'en-US': 'Main Image' },
+      image_size: [1280, 800],
+      image_url: 'https://addons.mozilla.org/user-media/previews/full/323/323201.png?modified=example',
+      position: 0,
+      thumbnail_size: [533, 333],
+      thumbnail_url: 'https://addons.mozilla.org/user-media/previews/thumbs/323/323201.jpg?modified=example',
+    },
+  ],
   slug: 'youtube-transcript-copy',
   support_url: null,
   url: 'https://addons.mozilla.org/en-US/firefox/addon/youtube-transcript-copy/',
@@ -88,10 +107,27 @@ test('normalizeAddonMetadata keeps provenance fields needed by docs and automati
     fileUrl: 'https://addons.mozilla.org/firefox/downloads/file/example/example.xpi',
     guid: 'youtube-transcript-copier@dislikelever.com',
     homepage: null,
+    iconUrl: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=example',
+    icons: {
+      32: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-32.png?modified=example',
+      64: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=example',
+      128: 'https://addons.mozilla.org/user-media/addon_icons/2920/2920626-128.png?modified=example',
+    },
     licenseName: 'MIT License',
     licenseSlug: 'MIT',
     licenseUrl: 'https://spdx.org/licenses/MIT.html',
     name: 'YouTube Transcript Copy',
+    previews: [
+      {
+        id: 323201,
+        caption: 'Main Image',
+        imageSize: [1280, 800],
+        imageUrl: 'https://addons.mozilla.org/user-media/previews/full/323/323201.png?modified=example',
+        position: 0,
+        thumbnailSize: [533, 333],
+        thumbnailUrl: 'https://addons.mozilla.org/user-media/previews/thumbs/323/323201.jpg?modified=example',
+      },
+    ],
     slug: 'youtube-transcript-copy',
     supportUrl: null,
     updatedAt: '2026-05-25T00:00:00.000Z',
@@ -113,6 +149,8 @@ test('renderUpstreamMarkdown records package hash, source URL, and license evide
   assert.match(upstream, /Version: `1\.0\.8`/);
   assert.match(upstream, /SHA-256: `sha256:ba7816bf8f01cfea/);
   assert.match(upstream, /License: \[MIT License\]/);
+  assert.match(upstream, /AMO listing icon: https:\/\/addons\.mozilla\.org\/user-media\/addon_icons\/2920\/2920626-64\.png/);
+  assert.match(upstream, /\[Main Image\]\(https:\/\/addons\.mozilla\.org\/user-media\/previews\/full\/323\/323201\.png/);
   assert.match(upstream, /Dislike Lever/);
 });
 
@@ -171,6 +209,18 @@ test('shouldSkipUpdate returns true when AMO package identity has not changed', 
   assert.equal(shouldSkipUpdate(existing, incoming), true);
 });
 
+test('shouldSkipUpdate returns false when AMO listing media changes', () => {
+  const existing = {
+    ...normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z'),
+    iconUrl: null,
+    icons: {},
+    previews: [],
+  };
+  const incoming = normalizeAddonMetadata(sampleAddon, '2026-05-25T00:00:00.000Z');
+
+  assert.equal(shouldSkipUpdate(existing, incoming), false);
+});
+
 test('shouldSkipUpdate returns false when AMO package hash changes', () => {
   const existing = normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z');
   const incoming = {
@@ -180,6 +230,105 @@ test('shouldSkipUpdate returns false when AMO package hash changes', () => {
   };
 
   assert.equal(shouldSkipUpdate(existing, incoming), false);
+});
+
+test('updateFromAmo refreshes listing media without re-extracting the unchanged XPI', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'open-yt-transcript-copy-'));
+  const manifestPath = path.join(workspace, 'source/extension/manifest.json');
+  const mirrorPath = path.join(workspace, '.mirror/amo.json');
+
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await mkdir(path.dirname(mirrorPath), { recursive: true });
+  await mkdir(path.join(workspace, 'docs'), { recursive: true });
+  await writeFile(path.join(workspace, 'docs/README.prepend.md'), '# Local Context\n');
+  await writeFile(manifestPath, JSON.stringify({ manifest_version: 3, version: '2.0.0' }, null, 2));
+  await writeFile(
+    mirrorPath,
+    `${JSON.stringify({
+      ...normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z'),
+      iconUrl: null,
+      icons: {},
+      previews: [],
+    }, null, 2)}\n`,
+  );
+
+  const media = new Map([
+    [sampleAddon.icons[128], Buffer.from('icon-bytes')],
+    [sampleAddon.previews[0].image_url, Buffer.from('preview-bytes')],
+  ]);
+
+  const result = await updateFromAmo({
+    rootDir: workspace,
+    updatedAt: '2026-05-25T00:00:00.000Z',
+    fetchImpl: async (url) => {
+      const urlText = String(url);
+      if (urlText.includes('/addons/addon/')) {
+        return { ok: true, json: async () => sampleAddon };
+      }
+      if (media.has(urlText)) {
+        const body = media.get(urlText);
+        return { ok: true, arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) };
+      }
+      throw new Error(`Unexpected XPI download for media-only update: ${url}`);
+    },
+  });
+
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const mirror = JSON.parse(await readFile(mirrorPath, 'utf8'));
+  const upstream = await readFile(path.join(workspace, 'UPSTREAM.md'), 'utf8');
+
+  assert.equal(result.changed, true);
+  assert.equal(manifest.version, '2.0.0');
+  assert.equal(mirror.iconUrl, sampleAddon.icon_url);
+  assert.equal(mirror.previews[0].caption, 'Main Image');
+  assert.match(upstream, /## Upstream Listing Media/);
+});
+
+test('updateFromAmo downloads AMO listing assets when package metadata is unchanged', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'open-yt-transcript-copy-'));
+  const manifestPath = path.join(workspace, 'source/extension/manifest.json');
+  const mirrorPath = path.join(workspace, '.mirror/amo.json');
+
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await mkdir(path.dirname(mirrorPath), { recursive: true });
+  await mkdir(path.join(workspace, 'docs'), { recursive: true });
+  await writeFile(path.join(workspace, 'docs/README.prepend.md'), '# Local Context\n');
+  await writeFile(manifestPath, JSON.stringify({ manifest_version: 3, version: '2.0.0' }, null, 2));
+  await writeFile(mirrorPath, `${JSON.stringify(normalizeAddonMetadata(sampleAddon, '2026-05-24T00:00:00.000Z'), null, 2)}\n`);
+
+  const media = new Map([
+    [sampleAddon.icons[128], Buffer.from('icon-bytes')],
+    [sampleAddon.previews[0].image_url, Buffer.from('preview-bytes')],
+  ]);
+
+  const result = await updateFromAmo({
+    rootDir: workspace,
+    updatedAt: '2026-05-25T00:00:00.000Z',
+    fetchImpl: async (url) => {
+      const urlText = String(url);
+      if (urlText.includes('/addons/addon/')) {
+        return { ok: true, json: async () => sampleAddon };
+      }
+      if (media.has(urlText)) {
+        const body = media.get(urlText);
+        return { ok: true, arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) };
+      }
+      throw new Error(`Unexpected download: ${urlText}`);
+    },
+  });
+
+  const assetsManifest = JSON.parse(await readFile(path.join(workspace, 'assets/amo-listing/manifest.json'), 'utf8'));
+  const icon = await readFile(path.join(workspace, 'assets/amo-listing/icon.png'));
+  const preview = await readFile(path.join(workspace, 'assets/amo-listing/preview-1.png'));
+
+  assert.equal(result.changed, true);
+  assert.deepEqual(icon, Buffer.from('icon-bytes'));
+  assert.deepEqual(preview, Buffer.from('preview-bytes'));
+  assert.equal(assetsManifest.icon.path, 'icon.png');
+  assert.equal(assetsManifest.icon.sha256, sha256(Buffer.from('icon-bytes')));
+  assert.deepEqual(assetsManifest.previews[0].caption, { 'en-US': 'Main Image' });
+  assert.equal(assetsManifest.previews[0].path, 'preview-1.png');
+  assert.equal(assetsManifest.previews[0].sha256, sha256(Buffer.from('preview-bytes')));
 });
 
 test('bumpPatchVersion increments the last numeric component', () => {
@@ -252,3 +401,7 @@ test('patchManifestForFork always sets MIT license required for AMO listed submi
 
   assert.equal(patched.license, 'MIT');
 });
+
+function sha256(buffer) {
+  return createHash('sha256').update(buffer).digest('hex');
+}

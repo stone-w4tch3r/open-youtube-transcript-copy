@@ -13,12 +13,65 @@
   "fileUrl": "https://addons.mozilla.org/firefox/downloads/file/4791347/youtube_transcript_copy-1.0.8.xpi",
   "guid": "youtube-transcript-copier@dislikelever.com",
   "homepage": null,
+  "iconUrl": "https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=b341611f",
+  "icons": {
+    "32": "https://addons.mozilla.org/user-media/addon_icons/2920/2920626-32.png?modified=b341611f",
+    "64": "https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=b341611f",
+    "128": "https://addons.mozilla.org/user-media/addon_icons/2920/2920626-128.png?modified=b341611f"
+  },
   "licenseName": "MIT License",
   "licenseSlug": "MIT",
   "licenseUrl": "https://spdx.org/licenses/MIT.html",
   "name": "YouTube Transcript Copy",
+  "previews": [
+    {
+      "id": 323201,
+      "caption": "Main Image",
+      "imageSize": [
+        1280,
+        800
+      ],
+      "imageUrl": "https://addons.mozilla.org/user-media/previews/full/323/323201.png?modified=1749743156",
+      "position": 0,
+      "thumbnailSize": [
+        533,
+        333
+      ],
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323201.jpg?modified=1749743156"
+    },
+    {
+      "id": 323202,
+      "caption": "Copy Transcript Button",
+      "imageSize": [
+        1280,
+        800
+      ],
+      "imageUrl": "https://addons.mozilla.org/user-media/previews/full/323/323202.png?modified=1749743156",
+      "position": 1,
+      "thumbnailSize": [
+        533,
+        333
+      ],
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323202.jpg?modified=1749743156"
+    },
+    {
+      "id": 323203,
+      "caption": "Available Settings",
+      "imageSize": [
+        1280,
+        800
+      ],
+      "imageUrl": "https://addons.mozilla.org/user-media/previews/full/323/323203.png?modified=1749743156",
+      "position": 2,
+      "thumbnailSize": [
+        533,
+        333
+      ],
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323203.jpg?modified=1749743156"
+    }
+  ],
   "slug": "youtube-transcript-copy",
   "supportUrl": null,
-  "updatedAt": "2026-05-25T12:00:53.589Z",
+  "updatedAt": "2026-05-25T20:23:40.872Z",
   "version": "1.0.8"
 }

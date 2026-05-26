@@ -57,10 +57,21 @@ export function normalizeAddonMetadata(addon, updatedAt = new Date().toISOString
     fileUrl: file.url,
     guid: addon.guid,
     homepage: addon.homepage,
+    iconUrl: addon.icon_url ?? null,
+    icons: addon.icons ?? {},
     licenseName: license.name?.['en-US'] ?? license.slug,
     licenseSlug: license.slug,
     licenseUrl: license.url,
     name: addon.name?.['en-US'] ?? addon.slug,
+    previews: (addon.previews ?? []).map((preview) => ({
+      id: preview.id,
+      caption: preview.caption?.['en-US'] ?? '',
+      imageSize: preview.image_size,
+      imageUrl: preview.image_url,
+      position: preview.position,
+      thumbnailSize: preview.thumbnail_size,
+      thumbnailUrl: preview.thumbnail_url,
+    })),
     slug: addon.slug,
     supportUrl: addon.support_url,
     updatedAt,
@@ -77,6 +88,11 @@ export function renderUpstreamMarkdown(metadata) {
   const authors = metadata.authors
     .map((author) => `- [${author.name}](${author.url}) (${author.username})`)
     .join('\n');
+  const previews = metadata.previews?.length
+    ? metadata.previews
+      .map((preview) => `- [${preview.caption || `Preview ${preview.position + 1}`}](${preview.imageUrl})`)
+      .join('\n')
+    : '- not listed';
 
   return `# Upstream Provenance
 
@@ -93,11 +109,16 @@ This repository is an unofficial open fork generated from the Mozilla Add-ons pa
 - License: [${metadata.licenseName}](${metadata.licenseUrl}) (AMO slug: \`${metadata.licenseSlug}\`)
 - Homepage: ${metadata.homepage ?? 'not listed'}
 - Support URL: ${metadata.supportUrl ?? 'not listed'}
+- AMO listing icon: ${metadata.iconUrl ?? 'not listed'}
 - Extracted at: ${metadata.updatedAt}
 
 ## Upstream Authors
 
 ${authors}
+
+## Upstream Listing Media
+
+${previews}
 
 ## Notes
 
@@ -155,10 +176,25 @@ export function shouldSkipUpdate(existingMetadata, incomingMetadata) {
   if (!existingMetadata) return false;
 
   return (
-    existingMetadata.version === incomingMetadata.version &&
-    existingMetadata.fileUrl === incomingMetadata.fileUrl &&
-    existingMetadata.fileHash === incomingMetadata.fileHash
+    hasSamePackageIdentity(existingMetadata, incomingMetadata) &&
+    listingMediaSignature(existingMetadata) === listingMediaSignature(incomingMetadata)
   );
+}
+
+function hasSamePackageIdentity(existingMetadata, incomingMetadata) {
+  return (
+    existingMetadata?.version === incomingMetadata.version &&
+    existingMetadata?.fileUrl === incomingMetadata.fileUrl &&
+    existingMetadata?.fileHash === incomingMetadata.fileHash
+  );
+}
+
+function listingMediaSignature(metadata) {
+  return JSON.stringify({
+    iconUrl: metadata.iconUrl ?? null,
+    icons: metadata.icons ?? {},
+    previews: metadata.previews ?? [],
+  });
 }
 
 export async function fetchAddonMetadata(slug, fetchImpl = fetch, apiBase = DEFAULT_AMO_API_BASE) {
@@ -173,6 +209,57 @@ export async function downloadPackage(url, fetchImpl = fetch) {
   const response = await fetchImpl(url);
   if (!response.ok) {
     throw new Error(`Failed to download XPI: ${response.status} ${response.statusText}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
+
+export async function syncAmoListingAssets(metadata, destinationDir, fetchImpl = fetch) {
+  await rm(destinationDir, { recursive: true, force: true });
+  await mkdir(destinationDir, { recursive: true });
+
+  const iconUrl = metadata.icons?.['128'] ?? metadata.icons?.[128] ?? metadata.iconUrl;
+  const icon = iconUrl
+    ? await downloadListingAsset(iconUrl, 'AMO listing icon', fetchImpl)
+    : null;
+  const previews = [];
+
+  if (icon) {
+    await writeFile(path.join(destinationDir, 'icon.png'), icon);
+  }
+
+  for (const preview of [...(metadata.previews ?? [])].sort((a, b) => a.position - b.position)) {
+    const fileName = `preview-${preview.position + 1}.png`;
+    const buffer = await downloadListingAsset(preview.imageUrl, `AMO preview ${preview.position + 1}`, fetchImpl);
+    await writeFile(path.join(destinationDir, fileName), buffer);
+    previews.push({
+      caption: { 'en-US': preview.caption },
+      path: fileName,
+      position: preview.position,
+      sha256: sha256(buffer),
+      sourceUrl: preview.imageUrl,
+      thumbnailUrl: preview.thumbnailUrl,
+    });
+  }
+
+  await writeFile(
+    path.join(destinationDir, 'manifest.json'),
+    `${JSON.stringify({
+      icon: icon
+        ? {
+          path: 'icon.png',
+          sha256: sha256(icon),
+          sourceUrl: iconUrl,
+        }
+        : null,
+      previews,
+    }, null, 2)}\n`,
+  );
+}
+
+async function downloadListingAsset(url, label, fetchImpl) {
+  const response = await fetchImpl(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download ${label}: ${response.status} ${response.statusText}`);
   }
   return Buffer.from(await response.arrayBuffer());
 }
@@ -237,24 +324,33 @@ export async function updateFromAmo(options = {}) {
   const metadata = normalizeAddonMetadata(addon, updatedAt);
   const mirrorPath = path.join(rootDir, '.mirror/amo.json');
   const extensionManifestPath = path.join(rootDir, 'source/extension/manifest.json');
+  const listingAssetsManifestPath = path.join(rootDir, 'assets/amo-listing/manifest.json');
   const existingMetadata = await readJsonIfExists(mirrorPath);
+  const manifestExists = await pathExists(extensionManifestPath);
+  const listingAssetsExist = await pathExists(listingAssetsManifestPath);
 
-  if (shouldSkipUpdate(existingMetadata, metadata) && await pathExists(extensionManifestPath)) {
+  if (shouldSkipUpdate(existingMetadata, metadata) && manifestExists && listingAssetsExist) {
     return { ...existingMetadata, changed: false };
   }
 
-  const existingForkVersion = await readForkVersion(extensionManifestPath, metadata.version);
+  const packageChanged = !hasSamePackageIdentity(existingMetadata, metadata);
 
-  let forkVersion = existingForkVersion;
-  if (existingMetadata) {
-    forkVersion = bumpPatchVersion(existingForkVersion);
+  if (packageChanged || !manifestExists) {
+    const existingForkVersion = await readForkVersion(extensionManifestPath, metadata.version);
+
+    let forkVersion = existingForkVersion;
+    if (existingMetadata && packageChanged) {
+      forkVersion = bumpPatchVersion(existingForkVersion);
+    }
+
+    const packageBuffer = await downloadPackage(metadata.fileUrl, fetchImpl);
+
+    verifySha256(packageBuffer, metadata.fileHash);
+    await extractXpiBuffer(packageBuffer, path.join(rootDir, 'source/extension'));
+    await patchExtractedManifest(extensionManifestPath, forkVersion, metadata.version);
   }
 
-  const packageBuffer = await downloadPackage(metadata.fileUrl, fetchImpl);
-
-  verifySha256(packageBuffer, metadata.fileHash);
-  await extractXpiBuffer(packageBuffer, path.join(rootDir, 'source/extension'));
-  await patchExtractedManifest(extensionManifestPath, forkVersion, metadata.version);
+  await syncAmoListingAssets(metadata, path.join(rootDir, 'assets/amo-listing'), fetchImpl);
 
   await mkdir(path.join(rootDir, '.mirror'), { recursive: true });
   await writeFile(mirrorPath, `${JSON.stringify(metadata, null, 2)}\n`);
@@ -305,6 +401,10 @@ async function pathExists(filePath) {
     if (error.code === 'ENOENT') return false;
     throw error;
   }
+}
+
+function sha256(buffer) {
+  return createHash('sha256').update(buffer).digest('hex');
 }
 
 function openZipBuffer(buffer) {

@@ -13,11 +13,18 @@ This repository is an unofficial open fork generated from the Mozilla Add-ons pa
 - License: [MIT License](https://spdx.org/licenses/MIT.html) (AMO slug: `MIT`)
 - Homepage: not listed
 - Support URL: not listed
-- Extracted at: 2026-05-25T12:00:53.589Z
+- AMO listing icon: https://addons.mozilla.org/user-media/addon_icons/2920/2920626-64.png?modified=b341611f
+- Extracted at: 2026-05-25T20:23:40.872Z
 
 ## Upstream Authors
 
 - [Dislike Lever](https://addons.mozilla.org/en-US/firefox/user/19050162/) (anonymous-bee2df996fa4ca154896555fa1b0fea4)
+
+## Upstream Listing Media
+
+- [Main Image](https://addons.mozilla.org/user-media/previews/full/323/323201.png?modified=1749743156)
+- [Copy Transcript Button](https://addons.mozilla.org/user-media/previews/full/323/323202.png?modified=1749743156)
+- [Available Settings](https://addons.mozilla.org/user-media/previews/full/323/323203.png?modified=1749743156)
 
 ## Notes
 

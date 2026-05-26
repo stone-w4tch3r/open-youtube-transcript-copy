@@ -1,0 +1,39 @@
+{
+  "icon": {
+    "path": "icon.png",
+    "sha256": "99c627dd21716f9ab3a99da6a4dc2f146207d0aa577e2486ba8d7c7b64496b72",
+    "sourceUrl": "https://addons.mozilla.org/user-media/addon_icons/2920/2920626-128.png?modified=b341611f"
+  },
+  "previews": [
+    {
+      "caption": {
+        "en-US": "Main Image"
+      },
+      "path": "preview-1.png",
+      "position": 0,
+      "sha256": "755a0bf9c92ba3354f16ba6caf6321db76f0ce1238604405886253ffa82b31eb",
+      "sourceUrl": "https://addons.mozilla.org/user-media/previews/full/323/323201.png?modified=1749743156",
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323201.jpg?modified=1749743156"
+    },
+    {
+      "caption": {
+        "en-US": "Copy Transcript Button"
+      },
+      "path": "preview-2.png",
+      "position": 1,
+      "sha256": "d7ad6c2e17a86fe39bd78c76bcb087ae6566a29e4050cc4c85ed62acf579c911",
+      "sourceUrl": "https://addons.mozilla.org/user-media/previews/full/323/323202.png?modified=1749743156",
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323202.jpg?modified=1749743156"
+    },
+    {
+      "caption": {
+        "en-US": "Available Settings"
+      },
+      "path": "preview-3.png",
+      "position": 2,
+      "sha256": "bce715e609d67d1a1fd239f7f1927a6fb18b3b51abe122905dfbb5eea5b65e41",
+      "sourceUrl": "https://addons.mozilla.org/user-media/previews/full/323/323203.png?modified=1749743156",
+      "thumbnailUrl": "https://addons.mozilla.org/user-media/previews/thumbs/323/323203.jpg?modified=1749743156"
+    }
+  ]
+}
